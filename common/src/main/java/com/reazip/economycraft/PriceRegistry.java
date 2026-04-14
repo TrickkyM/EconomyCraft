@@ -53,9 +53,8 @@ public final class PriceRegistry {
 
         if (Files.notExists(this.file)) {
             createFromBundledDefault();
-        } else {
-            mergeNewDefaultsFromBundledDefault();
         }
+        // REMOVED: mergeNewDefaultsFromBundledDefault(); - This was adding items to prices.json!
 
         reload();
     }
@@ -271,63 +270,8 @@ public final class PriceRegistry {
         }
     }
 
-    private void mergeNewDefaultsFromBundledDefault() {
-        JsonObject defaults = readBundledDefaultJson();
-        if (defaults == null) {
-            LOGGER.warn("[EconomyCraft] No bundled defaults found; skipping merge.");
-            return;
-        }
-
-        JsonObject userRoot;
-        try {
-            String json = Files.readString(file, StandardCharsets.UTF_8);
-            userRoot = GSON.fromJson(json, JsonObject.class);
-            if (userRoot == null) userRoot = new JsonObject();
-        } catch (Exception ex) {
-            backupBrokenConfig();
-            createFromBundledDefault();
-            return;
-        }
-
-        int added = 0;
-        for (Map.Entry<String, JsonElement> e : defaults.entrySet()) {
-            String key = e.getKey();
-
-            if (IdentifierCompat.tryParse(key) == null) {
-                LOGGER.warn("[EconomyCraft] Bundled default contains invalid key '{}', skipping.", key);
-                continue;
-            }
-
-            if (!userRoot.has(key)) {
-                JsonElement value = e.getValue();
-                userRoot.add(key, value == null ? null : value.deepCopy());
-                added++;
-            }
-        }
-
-        if (added > 0) {
-            try {
-                Files.writeString(file, GSON.toJson(userRoot), StandardCharsets.UTF_8);
-            } catch (IOException ex) {
-                LOGGER.error("[EconomyCraft] Failed to write merged prices.json at {}", file, ex);
-            }
-        }
-    }
-
-    private JsonObject readBundledDefaultJson() {
-        try (InputStream in = PriceRegistry.class.getResourceAsStream(DEFAULT_RESOURCE_PATH)) {
-            if (in == null) return null;
-
-            byte[] bytes = in.readAllBytes();
-            String json = new String(bytes, StandardCharsets.UTF_8);
-            JsonObject root = GSON.fromJson(json, JsonObject.class);
-            return root != null ? root : null;
-
-        } catch (Exception ex) {
-            LOGGER.error("[EconomyCraft] Failed to read bundled default prices.json from {}", DEFAULT_RESOURCE_PATH, ex);
-            return null;
-        }
-    }
+    // REMOVED: mergeNewDefaultsFromBundledDefault() method
+    // REMOVED: readBundledDefaultJson() method
 
     private void backupBrokenConfig() {
         try {
